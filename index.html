@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SCFHS Quiz – Auto Rationale Demo</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#f2f4f7;
+  padding:20px;
+}
+.container {
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  padding:25px;
+  border-radius:8px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+.option {
+  border:1px solid #ccc;
+  border-radius:6px;
+  padding:10px;
+  margin:10px 0;
+}
+button {
+  padding:10px 20px;
+  font-size:16px;
+  margin-top:15px;
+}
+.hidden { display:none; }
+
+.rationale {
+  margin-top:20px;
+  background:#f9fafb;
+  padding:15px;
+  border-left:5px solid #007bff;
+}
+
+.trap {
+  margin-top:8px;
+  padding:8px;
+  border-radius:6px;
+  font-size:14px;
+}
+.trap.nclex { background:#eef5ff; border-left:4px solid #0d6efd; }
+.trap.str { background:#fff7e6; border-left:4px solid #f0ad4e; }
+.trap.danger { background:#fdeaea; border-left:4px solid #d9534f; }
+
+.patho-box {
+  margin-top:15px;
+  background:#eef5ff;
+  padding:10px;
+  border-radius:6px;
+}
+.patho-diagram {
+  font-family: monospace;
+  background:#fff;
+  padding:10px;
+  margin-top:8px;
+  border:1px dashed #007bff;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>SCFHS Level-4 Quiz (Reality Demo)</h2>
+
+<p><b>Question:</b><br>
+A 68-year-old postoperative patient becomes restless.  
+BP 84/50, HR 128, RR 30, SpO₂ 91%.  
+Urine output is 20 mL/hr.<br><br>
+What is the <b>PRIORITY</b> nursing action?
+</p>
+
+<div class="option">
+  <input type="radio" name="q1" value="A"> A. Start isotonic IV fluids
+</div>
+<div class="option">
+  <input type="radio" name="q1" value="B"> B. Administer IV antibiotics
+</div>
+<div class="option">
+  <input type="radio" name="q1" value="C"> C. Give furosemide
+</div>
+<div class="option">
+  <input type="radio" name="q1" value="D"> D. Obtain blood cultures
+</div>
+
+<button onclick="submitAnswer()">Submit</button>
+
+<div id="result" class="rationale hidden"></div>
+
+</div>
+
+<script>
+// -------------------------------
+// AUTO CASE TYPE DETECTION
+// -------------------------------
+function detectCaseType(text) {
+  text = text.toLowerCase();
+  let score = 0;
+
+  if (text.includes("bp") || text.includes("hypotension")) score += 3;
+  if (text.includes("tachycardia")) score += 2;
+  if (text.includes("urine")) score += 2;
+
+  return score >= 5 ? "SHOCK" : "OTHER";
+}
+
+// -------------------------------
+// QUIZ LOGIC
+// -------------------------------
+function submitAnswer() {
+  const selected = document.querySelector('input[name="q1"]:checked');
+  if (!selected) {
+    alert("Select an answer first");
+    return;
+  }
+
+  const stem = document.body.innerText;
+  const caseType = detectCaseType(stem);
+
+  const result = document.getElementById("result");
+  result.classList.remove("hidden");
+
+  let html = `
+  <b>Detected Case Type:</b> ${caseType} (Hypovolemic pattern)<br><br>
+  <b>Correct Answer:</b> Start isotonic IV fluids<br><br>
+
+  <b>Pathophysiologic Rationale:</b><br>
+  Acute intravascular volume loss reduces venous return to the heart, leading
+  to decreased preload and stroke volume. This causes a drop in cardiac output
+  and mean arterial pressure, resulting in hypotension and reduced renal
+  perfusion, as evidenced by oliguria. Rapid isotonic fluid administration
+  restores circulating volume and improves tissue perfusion.
+  `;
+
+  html += `
+  <div class="trap nclex">
+    <b>Option B:</b> NCLEX timing trap — antibiotics treat infection but do not
+    correct immediate circulatory collapse.
+  </div>
+  <div class="trap danger">
+    <b>Option C:</b> Dangerous distractor — diuretics worsen volume depletion
+    and hypotension.
+  </div>
+  <div class="trap str">
+    <b>Option D:</b> STR delay — diagnostics postpone life-saving intervention.
+  </div>
+
+  <div class="patho-box">
+    <b>Click to expand pathophysiology sketch:</b>
+    <button onclick="togglePatho()">Show / Hide</button>
+    <div id="patho" class="patho-diagram hidden">
+Hypovolemia
+     ↓
+↓ Preload (venous return)
+     ↓
+↓ Cardiac Output
+     ↓
+↓ Mean Arterial Pressure
+     ↓
+Organ Hypoperfusion
+    </div>
+  </div>
+  `;
+
+  result.innerHTML = html;
+}
+
+function togglePatho() {
+  document.getElementById("patho").classList.toggle("hidden");
+}
+</script>
+
+</body>
+</html>
