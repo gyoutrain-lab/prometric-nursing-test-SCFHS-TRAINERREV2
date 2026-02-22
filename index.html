@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rationale Machine – Pathophysiology Review</title>
+<title>SCFHS Rationale Machine – Multi Item</title>
 
 <style>
 body {
@@ -63,11 +63,12 @@ button {
 <body>
 <div class="container">
 
-<h2>Pathophysiologic Rationale Engine (Generic)</h2>
+<h2>SCFHS Pathophysiologic Review Engine</h2>
 
 <div id="quiz"></div>
 
 <button onclick="submitAnswer()">Submit</button>
+<button onclick="nextQuestion()" class="hidden" id="nextBtn">Next</button>
 
 <div id="review" class="review hidden"></div>
 
@@ -75,82 +76,104 @@ button {
 
 <script>
 // ==============================
-// INJECT ANY QUESTION HERE
+// QUESTION BANK (INJECT HERE)
 // ==============================
-const question = {
-  q: "When a nurse places a febrile infant into cold water as an emergency intervention, through which mechanism will the infant primarily lose body heat?",
-  options: [
-    { text: "Evaporation", tag: "SAFE_DELAY" },
-    { text: "Convection", tag: "NCLEX" },
-    { text: "Conduction", tag: "SCFHS" },
-    { text: "Radiation", tag: "STR" }
-  ],
-  correctTag: "SCFHS",
-  rationale: {
-    correct: "Direct contact between the infant’s body and cold water causes heat loss through conduction, as thermal energy transfers from the warmer body to the cooler surface.",
-    distractors: {
-      SAFE_DELAY: "Evaporation requires vaporization of liquid, which does not occur with immersion in water.",
-      NCLEX: "Convection involves heat transfer via movement of air or fluid, not direct surface contact.",
-      STR: "Radiation involves heat loss without physical contact, which is not the mechanism in water immersion."
+const questions = [
+  {
+    q: "When a nurse places a febrile infant into cold water as an emergency intervention, through which mechanism will the infant primarily lose body heat?",
+    options: [
+      { text: "Evaporation", tag: "SAFE_DELAY" },
+      { text: "Convection", tag: "NCLEX" },
+      { text: "Conduction", tag: "SCFHS" },
+      { text: "Radiation", tag: "STR" }
+    ],
+    correctTag: "SCFHS",
+    rationale: {
+      correct: "Direct contact between the infant’s skin and cold water allows thermal energy to transfer from the warmer body to the cooler medium, which defines conduction.",
+      distractors: {
+        SAFE_DELAY: "Evaporation requires liquid changing to vapor, which does not occur during immersion.",
+        NCLEX: "Convection involves heat loss through moving air or fluid, not direct surface contact.",
+        STR: "Radiation involves heat transfer without physical contact."
+      }
+    }
+  },
+  {
+    q: "A patient with acute blood loss develops hypotension, tachycardia, and oliguria. What is the primary physiologic problem?",
+    options: [
+      { text: "Decreased preload", tag: "SCFHS" },
+      { text: "Increased afterload", tag: "NCLEX" },
+      { text: "Myocardial failure", tag: "STR" },
+      { text: "Peripheral vasodilation", tag: "SAFE_DELAY" }
+    ],
+    correctTag: "SCFHS",
+    rationale: {
+      correct: "Acute blood loss reduces circulating volume, leading to decreased venous return and preload, which lowers cardiac output and blood pressure.",
+      distractors: {
+        NCLEX: "Afterload does not primarily increase in acute hypovolemia.",
+        STR: "There is no evidence of intrinsic cardiac dysfunction.",
+        SAFE_DELAY: "Peripheral vasodilation is not the dominant mechanism in hemorrhagic shock."
+      }
     }
   }
-};
+];
 
 // ==============================
-// RENDER QUIZ
+// ENGINE STATE
 // ==============================
-const quizDiv = document.getElementById("quiz");
-
-quizDiv.innerHTML = `
-<p><b>Question:</b><br>${question.q}</p>
-${question.options.map((opt, i) => `
-  <div class="option">
-    <input type="radio" name="answer" value="${opt.tag}">
-    ${String.fromCharCode(65 + i)}. ${opt.text}
-    <span class="tag ${opt.tag}">${opt.tag}</span>
-  </div>
-`).join("")}
-`;
+let index = 0;
 
 // ==============================
-// SUBMIT & REVIEW ENGINE
+// RENDER QUESTION
+// ==============================
+function renderQuestion() {
+  const q = questions[index];
+  document.getElementById("review").classList.add("hidden");
+  document.getElementById("nextBtn").classList.add("hidden");
+
+  document.getElementById("quiz").innerHTML = `
+    <p><b>Question ${index + 1}:</b><br>${q.q}</p>
+    ${q.options.map((opt, i) => `
+      <div class="option">
+        <input type="radio" name="answer" value="${opt.tag}">
+        ${String.fromCharCode(65 + i)}. ${opt.text}
+        <span class="tag ${opt.tag}">${opt.tag}</span>
+      </div>
+    `).join("")}
+  `;
+}
+
+// ==============================
+// SUBMIT ANSWER
 // ==============================
 function submitAnswer() {
   const selected = document.querySelector('input[name="answer"]:checked');
   if (!selected) {
-    alert("Please select an answer.");
+    alert("Select an answer.");
     return;
   }
 
+  const q = questions[index];
   const review = document.getElementById("review");
   review.classList.remove("hidden");
 
   let html = `
-  <b>Correct Answer Mechanism:</b><br>
-  ${question.rationale.correct}
+  <b>Correct Mechanism:</b><br>
+  ${q.rationale.correct}
   <br><br>
-
-  <b>Option Analysis:</b>
+  <b>Option Review:</b><br>
   `;
 
-  question.options.forEach(opt => {
-    if (opt.tag === question.correctTag) {
-      html += `
-      <div>
-        <b>${opt.text}</b> (${opt.tag}) — ✅ Correct
-      </div>`;
+  q.options.forEach(opt => {
+    if (opt.tag === q.correctTag) {
+      html += `<div><b>${opt.text}</b> (${opt.tag}) — ✅ Correct</div>`;
     } else {
-      html += `
-      <div>
-        <b>${opt.text}</b> (${opt.tag}) — ❌ Incorrect<br>
-        ${question.rationale.distractors[opt.tag]}
-      </div>`;
+      html += `<div><b>${opt.text}</b> (${opt.tag}) — ❌ ${q.rationale.distractors[opt.tag]}</div>`;
     }
   });
 
   html += `
   <div class="patho">
-Heat Transfer Principles:
+Core Principle:
 Conduction → direct contact
 Convection → moving air/fluid
 Radiation → no contact
@@ -159,7 +182,26 @@ Evaporation → liquid to vapor
   `;
 
   review.innerHTML = html;
+  document.getElementById("nextBtn").classList.remove("hidden");
 }
+
+// ==============================
+// NEXT QUESTION
+// ==============================
+function nextQuestion() {
+  index++;
+  if (index >= questions.length) {
+    document.getElementById("quiz").innerHTML =
+      "<h3>✅ End of Quiz</h3>";
+    document.getElementById("review").classList.add("hidden");
+    document.getElementById("nextBtn").classList.add("hidden");
+    return;
+  }
+  renderQuestion();
+}
+
+// INIT
+renderQuestion();
 </script>
 
 </body>
